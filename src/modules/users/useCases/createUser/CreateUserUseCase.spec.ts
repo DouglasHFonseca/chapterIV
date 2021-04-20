@@ -1,5 +1,6 @@
 import { Connection, createConnection } from 'typeorm';
 import { UsersRepository } from '../../repositories/UsersRepository';
+import { CreateUserError } from './CreateUserError';
 import { CreateUserUseCase } from './CreateUserUseCase';
 
 let createUserUseCase: CreateUserUseCase;
@@ -30,5 +31,17 @@ describe("Create User", () => {
     const response = await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
 
     expect(response).toHaveProperty("id");
+  });
+
+  it("should not be able to create more than one user with the same email", async () => {
+    expect(async () => {
+      const user = {
+        name: "douglas",
+        email: "douglas@gmail.com",
+        password: "12345"
+      }
+      await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
+      await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
+    }).rejects.toBeInstanceOf(CreateUserError);
   })
 })
