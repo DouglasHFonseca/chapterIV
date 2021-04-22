@@ -1,30 +1,23 @@
-import { Connection, createConnection } from 'typeorm';
-import { UsersRepository } from '../../repositories/UsersRepository';
-import { CreateUserError } from './CreateUserError';
+
+import { AppError } from '../../../../shared/errors/AppError';
+import { InMemoryUsersRepository } from '../../repositories/in-memory/InMemoryUsersRepository';
 import { CreateUserUseCase } from './CreateUserUseCase';
 
 let createUserUseCase: CreateUserUseCase;
-let usersRepository: UsersRepository;
+let usersRepositoryInMemory: InMemoryUsersRepository;
 
-let connection: Connection;
 describe("Create User", () => {
-  beforeAll(async () => {
-    connection = await createConnection();
-    await connection.runMigrations();
 
-    usersRepository = new UsersRepository();
-    createUserUseCase = new CreateUserUseCase(usersRepository);
+  beforeAll(async () => {
+    usersRepositoryInMemory = new InMemoryUsersRepository();
+    createUserUseCase = new CreateUserUseCase(usersRepositoryInMemory);
   });
 
-  afterAll(async () => {
-    await connection.dropDatabase();
-    await connection.close();
-  })
 
   it("should be able to create a new user", async () => {
     const user = {
-      name: "douglas",
-      email: "douglas@gmail.com",
+      name: "Test1",
+      email: "test1@gmail.com",
       password: "12345"
     }
 
@@ -36,12 +29,12 @@ describe("Create User", () => {
   it("should not be able to create more than one user with the same email", async () => {
     expect(async () => {
       const user = {
-        name: "douglas",
-        email: "douglas@gmail.com",
+        name: "test2",
+        email: "test2@gmail.com",
         password: "12345"
       }
       await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
       await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
-    }).rejects.toBeInstanceOf(CreateUserError);
+    }).rejects.toBeInstanceOf(AppError);
   })
 })

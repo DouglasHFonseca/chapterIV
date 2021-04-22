@@ -1,27 +1,16 @@
-import { Connection, createConnection } from 'typeorm';
-import { AppError } from '../../../../shared/errors/AppError';
-import { UsersRepository } from '../../repositories/UsersRepository';
+import { InMemoryUsersRepository } from '../../repositories/in-memory/InMemoryUsersRepository';
 import { CreateUserUseCase } from '../createUser/CreateUserUseCase';
 import { AuthenticateUserUseCase } from './AuthenticateUserUseCase'
+import { IncorrectEmailOrPasswordError } from './IncorrectEmailOrPasswordError';
 
 let createUserUseCase: CreateUserUseCase;
 let authenticateUserUseCase: AuthenticateUserUseCase;
-let usersRepository: UsersRepository;
-
-let connection: Connection;
+let usersRepositoryInMemory: InMemoryUsersRepository
 describe("Create a session", () => {
   beforeAll(async () => {
-    connection = await createConnection();
-    await connection.runMigrations();
-
-    usersRepository = new UsersRepository();
-    authenticateUserUseCase = new AuthenticateUserUseCase(usersRepository);
-    createUserUseCase = new CreateUserUseCase(usersRepository);
-  })
-
-  afterAll(async () => {
-    await connection.dropDatabase();
-    await connection.close();
+    usersRepositoryInMemory = new InMemoryUsersRepository();
+    authenticateUserUseCase = new AuthenticateUserUseCase(usersRepositoryInMemory);
+    createUserUseCase = new CreateUserUseCase(usersRepositoryInMemory);
   })
 
   it("should be able to authenticate an user", async () => {
@@ -31,7 +20,7 @@ describe("Create a session", () => {
       password: "12345"
     }
 
-    await createUserUseCase.execute(user);
+    await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
 
     const result = await authenticateUserUseCase.execute({
       email: user.email,
@@ -47,7 +36,7 @@ describe("Create a session", () => {
         email: "false@email.com",
         password: "1234",
       });
-    }).rejects.toBeInstanceOf(AppError);
+    }).rejects.toBeInstanceOf(IncorrectEmailOrPasswordError);
   });
 
   it("should be not able to authenticate with incorrect password", () => {
@@ -58,12 +47,12 @@ describe("Create a session", () => {
         name: "User Test Error",
       };
 
-      await createUserUseCase.execute(user);
+      await createUserUseCase.execute({ name: user.name, email: user.email, password: user.password });
 
       await authenticateUserUseCase.execute({
         email: user.email,
         password: "incorrectPassword",
       });
-    }).rejects.toBeInstanceOf(AppError);
+    }).rejects.toBeInstanceOf(IncorrectEmailOrPasswordError);
   });
 })
