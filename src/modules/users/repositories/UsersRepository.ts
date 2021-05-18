@@ -4,7 +4,7 @@ import { User } from "../entities/User";
 import { ICreateUserDTO } from "../useCases/createUser/ICreateUserDTO";
 import { IUsersRepository } from "./IUsersRepository";
 
-export class UsersRepository implements IUsersRepository {
+class UsersRepository implements IUsersRepository {
   private repository: Repository<User>;
 
   constructor() {
@@ -27,3 +27,5 @@ export class UsersRepository implements IUsersRepository {
     return this.repository.save(user);
   }
 }
+
+export { UsersRepository };

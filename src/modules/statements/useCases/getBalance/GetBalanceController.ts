@@ -5,12 +5,12 @@ import { BalanceMap } from '../../mappers/BalanceMap';
 import { GetBalanceUseCase } from './GetBalanceUseCase';
 
 export class GetBalanceController {
-  async execute(request: Request, response: Response) {
+  async execute(request: Request, response: Response):Promise<Response> {
     const { id: user_id } = request.user;
 
-    const getBalance = container.resolve(GetBalanceUseCase);
+    const getBalanceUseCase = container.resolve(GetBalanceUseCase);
 
-    const balance = await getBalance.execute({ user_id });
+    const balance = await getBalanceUseCase.execute({ user_id });
 
     const balanceDTO = BalanceMap.toDTO(balance);
 
