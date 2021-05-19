@@ -4,10 +4,9 @@ import { CreateTransferUseCase } from './CreateTransferUseCase';
 
 class CreateTransferController {
   async handle(request: Request, response: Response): Promise<Response> {
-    const user_id = request.params;
+    const { user_id } = request.params;
     const { id } = request.user;
     const { amount, description } = request.body;
-
 
     const createTransferUseCase = container.resolve(CreateTransferUseCase);
 
@@ -17,7 +16,7 @@ class CreateTransferController {
         description,
         sender_id: id,
       },
-      String(user_id)
+      user_id
     );
 
     return response.status(201).send(transfer);

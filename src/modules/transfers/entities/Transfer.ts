@@ -11,14 +11,14 @@ import { v4 as uuid } from 'uuid';
 import { User } from '@modules/users/entities/User';
 
 @Entity("transfers")
-export class Transfer {
+class Transfer {
   @PrimaryGeneratedColumn("uuid")
   id?: string;
 
   @Column("uuid")
   sender_id: string
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, user => user.transfer)
   @JoinColumn({ name: 'sender_id' })
   user: User;
 
@@ -44,3 +44,5 @@ export class Transfer {
     }
   }
 }
+
+export { Transfer }

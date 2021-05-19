@@ -1,3 +1,4 @@
+import { Transfer } from '@modules/transfers/entities/Transfer';
 import {
   Column,
   CreateDateColumn,
@@ -25,6 +26,9 @@ export class User {
 
   @OneToMany(() => Statement, statement => statement.user)
   statement: Account[];
+
+  @OneToMany(() => Transfer, transfer => transfer.user)
+  transfer: Account[];
 
   @CreateDateColumn()
   created_at: Date;

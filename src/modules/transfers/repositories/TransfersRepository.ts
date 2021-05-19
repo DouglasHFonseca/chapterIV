@@ -4,7 +4,7 @@ import { ICreateTransferDTO } from '../useCases/createTransfer/ICreateTransferDT
 import { ITransfersRepository } from './ITransfersRepository';
 
 
-export class TransfersRepository implements ITransfersRepository {
+class TransfersRepository implements ITransfersRepository {
   private repository: Repository<Transfer>;
 
   constructor() {
@@ -21,4 +21,15 @@ export class TransfersRepository implements ITransfersRepository {
     return this.repository.save(transfer);
   }
 
+  async totalTransfers(sender_id: string): Promise<{ total: number, transfers: Transfer[] }> {
+    const transfers = await this.repository.find({ where: { sender_id } });
+
+    const total = transfers.reduce(
+      (acc, operation) =>
+        acc + Number(operation.amount), 0);
+
+    return { total, transfers };
+  }
 }
+
+export { TransfersRepository }

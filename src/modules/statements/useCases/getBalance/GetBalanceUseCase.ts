@@ -1,3 +1,5 @@
+import { Transfer } from '@modules/transfers/entities/Transfer';
+import { ITransfersRepository } from '@modules/transfers/repositories/ITransfersRepository';
 import { inject, injectable } from "tsyringe";
 
 import { IUsersRepository } from "../../../users/repositories/IUsersRepository";
@@ -11,6 +13,7 @@ interface IRequest {
 
 interface IResponse {
   statement: Statement[];
+  transfer: Transfer[];
   balance: number;
 }
 
@@ -22,20 +25,30 @@ export class GetBalanceUseCase {
 
     @inject('UsersRepository')
     private usersRepository: IUsersRepository,
-  ) {}
+
+    @inject('TransfersRepository')
+    private transfersRepository: ITransfersRepository
+  ) { }
 
   async execute({ user_id }: IRequest): Promise<IResponse> {
     const user = await this.usersRepository.findById(user_id);
 
-    if(!user) {
+    if (!user) {
       throw new GetBalanceError();
     }
 
-    const balance = await this.statementsRepository.getUserBalance({
-      user_id,
-      with_statement: true
-    });
+    const statement = await this.statementsRepository.getUserBalance({ user_id });
 
-    return balance as IResponse;
+    const transfer = await this.transfersRepository.totalTransfers(user_id);
+
+    const balance = statement.balance - transfer.total;
+
+    const fullStatement = {
+      statement: statement.statement,
+      transfer: transfer.transfers,
+      balance
+    }
+
+    return fullStatement as IResponse;
   }
 }
